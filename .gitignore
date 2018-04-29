@@ -1,4 +1,5 @@
 package-lock.json
+local.config.js
 # Logs
 logs
 *.log
