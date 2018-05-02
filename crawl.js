@@ -12,7 +12,6 @@ const movieList = (maxMovies=10000) => {
     if (page>numPages) {
       console.log('finished');
     } else {
-      console.log(api_key);
       axios.get('/movie/top_rated', { params: { page, api_key } })
         .then(response => {
           console.log(`movies page ${page}`, response);
