@@ -1,32 +1,33 @@
 const axios = require('axios');
 axios.defaults.baseURL = 'https://api.themoviedb.org/3';
-const api_key = require('./local.config.js');
+const api_key = require('./local.config.js').api_key;
 //const sleep = require('sleep');
 console.log(api_key);
-const nextRequest = page => {
-  if (page>numPages) {
-    console.log('finished');
-  } else {
-    axios.get('/movie/top_rated', { params: { page, api_key } })
-      .then(response => {
-        console.log(`movies page ${page}`, response);
-        console.log(`movies page ${page}`, response.results);
 
-        if (response.headers['x-ratelimit-remaining'] < 10) {
-          console.log('do sleep');
-          setTimeout(nextRequest(page+1), 3000);
-        } else {
-          nextRequest(page+1);
-        }
-      })
-      .catch(error => console.log(error));
-  }
-};
 const movieList = (maxMovies=10000) => {
   const movieIds = [];
   const numPages = maxMovies / 20;
 
+  const nextRequest = page => {
+    if (page>numPages) {
+      console.log('finished');
+    } else {
+      console.log(api_key);
+      axios.get('/movie/top_rated', { params: { page, api_key } })
+        .then(response => {
+          console.log(`movies page ${page}`, response);
+          console.log(`movies page ${page}`, response.results);
 
+          if (response.headers['x-ratelimit-remaining'] < 5) {
+            console.log('do sleep');
+            setTimeout(nextRequest(page+1), 3000);
+          } else {
+            nextRequest(page+1);
+          }
+        })
+        .catch(error => console.log(error));
+    }
+  };
 
   nextRequest(1);
 
