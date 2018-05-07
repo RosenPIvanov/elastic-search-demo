@@ -23,13 +23,14 @@ const getCastAndCrew = (movieId, movie) => {
 };
 const extract = (movieIds=[]) => {
   movieIds.map(movieId => {
-    axios.get(`/movie/${movieId}/` , { params: { api_key } })
+    axios.get(`/movie/${movieId}` , { params: { api_key } })
       .then(response => {
-        console.log(JSON.stringify(response.data.results));
+        console.log('movie:', JSON.stringify(response.data));
+        const movie = response.data;
 
         return getCastAndCrew(movieId, movie);
       })
-      .then(data => console.log(`data is:${data}`))
+      .then(data => console.log(`data is: ${data}`))
       .catch(error => console.log(error));
 
   //if int(httpResp.headers['x-ratelimit-remaining']) < 10:
@@ -58,7 +59,15 @@ const movieList = (maxMovies=10000) => {
           console.log('movieIds', movieIds);
           extract(movieIds);
 
-          if (response.headers['x-ratelimit-remaining'] < 5) {
+          // if (response.headers['x-ratelimit-remaining'] < 5) {
+          //   setTimeout(nextRequest(page+1), 3000);
+          // } else {
+          //   nextRequest(page+1);
+          // }
+          return response;
+        })
+        .then(response => {
+          if (response.headers['x-ratelimit-remaining'] < 10) {
             setTimeout(nextRequest(page+1), 3000);
           } else {
             nextRequest(page+1);
@@ -69,10 +78,6 @@ const movieList = (maxMovies=10000) => {
   };
 
   nextRequest(1);
-  console.log('movieIds', movieIds);
-
-
-
 };
 
 movieList();
