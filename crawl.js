@@ -4,12 +4,45 @@ const api_key = require('./local.config.js').api_key;
 //const sleep = require('sleep');
 console.log(api_key);
 
+const getCastAndCrew = (movieId, movie) => {
+  return axios.get(`/movie/${movieId}/credits` , { params: { api_key } })
+    .then(response => {
+      console.log(JSON.stringify(response.data));
+      const credits = response.data;
+      const crew = credits.crew;
+      const directors = [];
+      crew.forEach(crewMember => {
+        if (crewMember.job === 'Director')
+          directors.append(crewMember);
+      });
+      movie.directors = directors;
+
+      return movie;
+    });
+  //.catch(error => console.log(error));
+};
+const extract = (movieIds=[]) => {
+  movieIds.map(movieId => {
+    axios.get(`/movie/${movieId}/` , { params: { api_key } })
+      .then(response => {
+        console.log(JSON.stringify(response.data.results));
+
+        return getCastAndCrew(movieId, movie);
+      })
+      .then(data => console.log(`data is:${data}`))
+      .catch(error => console.log(error));
+
+  //if int(httpResp.headers['x-ratelimit-remaining']) < 10:
+
+  });
+};
+
 const movieList = (maxMovies=10000) => {
-  
+
   const numPages = maxMovies / 20;
 
   const nextRequest = page => {
-    
+
     if (page>numPages) {
       console.log('finished');
     } else {
@@ -21,9 +54,9 @@ const movieList = (maxMovies=10000) => {
           response.data.results.forEach(element => {
             movieIds.push(element.id);
           });
-          
+
           console.log('movieIds', movieIds);
-          //TODO extract(movieIds) -> index
+          extract(movieIds);
 
           if (response.headers['x-ratelimit-remaining'] < 5) {
             setTimeout(nextRequest(page+1), 3000);
@@ -38,27 +71,8 @@ const movieList = (maxMovies=10000) => {
   nextRequest(1);
   console.log('movieIds', movieIds);
 
- cosnt extract =  (movieIds=[], numMovies=10000) => {
-   movieIds.map(movieId => {
-     axios.get('/movie/' + movieId  + '/' , { params: { api_key } })
-     .then(response => {      
-      //console.log(JSON.stringify(response.data.results));
-       getCastAndCrew(movieId, movie)           
 
-      if (response.headers['x-ratelimit-remaining'] < 5) {
-        setTimeout(nextRequest(page+1), 3000);
-      } else {
-        nextRequest(page+1);
-      }
-    })
-    .catch(error => console.log(error));
-    
-    //if int(httpResp.headers['x-ratelimit-remaining']) < 10:
-    
-    
-    
-  });
+
 };
-  
 
 movieList();
