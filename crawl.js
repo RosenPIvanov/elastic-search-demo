@@ -13,7 +13,7 @@ const getCastAndCrew = (movieId, movie) => {
       const directors = [];
       crew.forEach(crewMember => {
         if (crewMember.job === 'Director')
-          directors.append(crewMember);
+          directors.push(crewMember);
       });
       movie.directors = directors;
 
@@ -30,7 +30,7 @@ const extract = (movieIds=[]) => {
 
         return getCastAndCrew(movieId, movie);
       })
-      .then(data => console.log(`data is: ${data}`))
+      .then(data => console.log(`data is: ${JSON.stringify(data, null,4)}`))
       .catch(error => console.log(error));
 
   //if int(httpResp.headers['x-ratelimit-remaining']) < 10:
@@ -80,4 +80,4 @@ const movieList = (maxMovies=10000) => {
   nextRequest(1);
 };
 
-movieList();
+movieList(20);
