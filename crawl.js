@@ -1,13 +1,12 @@
 const axios = require('axios');
 axios.defaults.baseURL = 'https://api.themoviedb.org/3';
 const api_key = require('./local.config.js').api_key;
-//const sleep = require('sleep');
-console.log(api_key);
+const fs = require('fs');
 
 const getCastAndCrew = (movieId, movie) => {
-  return axios.get(`/movie/${movieId}/credits` , { params: { api_key } })
+  axios.get(`/movie/${movieId}/credits` , { params: { api_key } })
     .then(response => {
-      console.log(JSON.stringify(response.data));
+      //console.log(JSON.stringify(response.data));
       const credits = response.data;
       const crew = credits.crew;
       const directors = [];
@@ -16,21 +15,29 @@ const getCastAndCrew = (movieId, movie) => {
           directors.push(crewMember);
       });
       movie.directors = directors;
+      fs.appendFileSync('data.json', `${JSON.stringify(movie)}\n`);
 
       return movie;
-    });
-  //.catch(error => console.log(error));
+    })
+    .catch(error => console.log(error));
 };
 const extract = (movieIds=[]) => {
-  movieIds.map(movieId => {
+  movieIds.map((movieId, i) => {
     axios.get(`/movie/${movieId}` , { params: { api_key } })
       .then(response => {
-        console.log('movie:', JSON.stringify(response.data));
+        //console.log('movie:', JSON.stringify(response.data));
         const movie = response.data;
-
-        return getCastAndCrew(movieId, movie);
+        if (response.headers['x-ratelimit-remaining'] < 10) {
+          console.log(`will throttle 2 ${response.headers['x-ratelimit-remaining']}`)
+          setTimeout(getCastAndCrew(movieId, movie), 3000*(i+1))
+        } else
+          getCastAndCrew(movieId, movie);
+      //  return movie;
       })
-      .then(data => console.log(`data is: ${JSON.stringify(data, null,4)}`))
+    //  .then(() => {
+        //console.log(`data is: ${JSON.stringify(data, null,4)}`);
+        //fs.appendFileSync('data.json', `${JSON.stringify(data)}\n`);
+    //  })
       .catch(error => console.log(error));
 
   //if int(httpResp.headers['x-ratelimit-remaining']) < 10:
@@ -57,7 +64,9 @@ const movieList = (maxMovies=10000) => {
           });
 
           console.log('movieIds', movieIds);
-          extract(movieIds);
+          console.log('movieIds.length', movieIds.length);
+          setTimeout(() => extract(movieIds), 3000);
+
 
           // if (response.headers['x-ratelimit-remaining'] < 5) {
           //   setTimeout(nextRequest(page+1), 3000);
@@ -68,6 +77,7 @@ const movieList = (maxMovies=10000) => {
         })
         .then(response => {
           if (response.headers['x-ratelimit-remaining'] < 10) {
+            console.log(`will throttle 1 ${response.headers['x-ratelimit-remaining']}`)
             setTimeout(nextRequest(page+1), 3000);
           } else {
             nextRequest(page+1);
