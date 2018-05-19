@@ -6,7 +6,9 @@ const fs = require('fs');
 const timeout = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 const sleep = async fn => {
-  await timeout(6000);
+  console.log('before timeout');
+  await timeout(10000);
+  console.log('after timeout');
 
   return fn();
 };
@@ -30,10 +32,10 @@ const getCastAndCrew = (movieId, movie) => {
     })
     .catch(error => console.log(`getCastAndCrew: ${error}`));
 };
-const extract = async (movieIds=[]) => {
+const extract = (movieIds=[]) => {
   console.log(`extract for ${movieIds}`);
-  await movieIds.map(movieId => {
-    axios.get(`/movie/${movieId}` , { params: { api_key } })
+  movieIds.map(async movieId => {
+    await axios.get(`/movie/${movieId}` , { params: { api_key } })
       .then(response => {
         //console.log('movie:', JSON.stringify(response.data));
         const movie = response.data;
@@ -51,7 +53,7 @@ const extract = async (movieIds=[]) => {
     //  })
       .catch(error => console.log(error));
 
-  //if int(httpResp.headers['x-ratelimit-remaining']) < 10:
+  //if int(httpResp.headers['x-ratelimit-remaining']) < 20:
 
   });
 };
@@ -82,7 +84,7 @@ const movieList = (maxMovies=10000) => {
             extract(movieIds);
           }
 
-          // if (response.headers['x-ratelimit-remaining'] < 5) {
+          // if (response.headers['x-ratelimit-remaining'] < 20) {
           //   setTimeout(nextRequest(page+1), 3000);
           // } else {
           //   nextRequest(page+1);
