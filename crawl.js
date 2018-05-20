@@ -101,4 +101,4 @@ const movieList = async (maxMovies=10000) => {
   }
 };
 
-movieList(1000);
+movieList(10000);

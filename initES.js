@@ -1,5 +1,9 @@
 const axios = require('axios');
 axios.defaults.baseURL = 'http://localhost:9200';
+const headers = { headers: { 'Content-Type': 'application/json' } };
+
+const fs = require('fs');
+const readline = require('readline');
 
 const reindex = (analysisSettings={}, mappingSettings={}, movieDict={}) => {
 
@@ -21,53 +25,26 @@ const reindex = (analysisSettings={}, mappingSettings={}, movieDict={}) => {
         .then(response => console.log('index created', response))
         .catch(error => console.log(error))
         .then(() => {
+          const instream = fs.createReadStream('example_data.json');
+          const outstream = new (require('stream'))();
+          const rl = readline.createInterface(instream, outstream);
 
-          // let bulkMovies = ""
-          // for id, movie in movieDict.iteritems():
-          //     addCmd = {"index": {"_index": "tmdb",
-          //                         "_type": "movie",
-          //                         "_id": movie["id"]}
-          //                       }
-          //     bulkMovies += json.dumps(addCmd) + "\n" + json.dumps(movie) + "\n"
+          let bulkMovies = '';
+          rl.on('line', line => {
+            //console.log(line);
+            const addCmd = { index: { _index: 'tmdb', _type: 'movie', _id: JSON.parse(line).id } };
+            bulkMovies += `${JSON.stringify(addCmd)}\n${line}\n`;
+          });
 
-          axios.post('/_bulk"', settings)
-            .then(response => console.log('index created', response))
-            .catch(error => console.log(error));
-
+          rl.on('close', () => {
+            //console.log(`bulkMovies: ${bulkMovies}`);
+            console.log('done reading file.');
+            axios.post('/_bulk', bulkMovies, headers)
+              .then(() => console.log('index created'))
+              .catch(error => console.log(error));
+          });
         });
     });
 };
 
 reindex();
-//resp = http.put("/tmdb",
-
-// var data=json.dumps(settings))
-// var bulkMovies = ""
-// movieDict.forEach(item=>{
-// for id, movie in .iteritems():
-// addCmd = {"index": {"_index": "tmdb",
-// "_type": "movie",
-// "_id": item.movie["id"]}}
-// bulkMovies += json.dumps(addCmd) + "\n" + json.dumps(movie) + "\n"
-//
-// })
-// resp = requests.post("http://localhost:9200/_bulk", data=bulkMovies)
-// }
-//
-//
-// https.get('http://api.nasa.gov/planetary/apod?api_key=DEMO_KEY', (resp) => {
-//   let data = '';
-//
-//   // A chunk of data has been recieved.
-//   resp.on('data', (chunk) => {
-//     data += chunk;
-//   });
-//
-//   // The whole response has been received. Print out the result.
-//   resp.on('end', () => {
-//     console.log(JSON.parse(data).explanation);
-//   });
-//
-// }).on("error", (err) => {
-//   console.log("Error: " + err.message);
-// });
