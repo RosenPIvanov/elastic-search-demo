@@ -5,7 +5,29 @@ const headers = { headers: { 'Content-Type': 'application/json' } };
 const fs = require('fs');
 const readline = require('readline');
 
-const reindex = (analysisSettings={}, mappingSettings={}, movieDict={}) => {
+const fillData = fileName => {
+
+  const instream = fs.createReadStream(fileName);
+  const outstream = new (require('stream'))();
+  const rl = readline.createInterface(instream, outstream);
+
+  let bulkMovies = '';
+  rl.on('line', line => {
+    //console.log(line);
+    const addCmd = { index: { _index: 'tmdb', _type: 'movie', _id: JSON.parse(line).id } };
+    bulkMovies += `${JSON.stringify(addCmd)}\n${line}\n`;
+  });
+
+  rl.on('close', () => {
+    //console.log(`bulkMovies: ${bulkMovies}`);
+    console.log('done reading file.');
+    axios.post('/_bulk', bulkMovies, headers)
+      .then(() => console.log('bulk done'))
+      .catch(error => console.log(error));
+  });
+};
+
+const reindex = (analysisSettings={}, mappingSettings={}) => {
 
   const settings = {
     settings: {
@@ -25,43 +47,8 @@ const reindex = (analysisSettings={}, mappingSettings={}, movieDict={}) => {
         .then(response => console.log('index created', response))
         .catch(error => console.log(error))
         .then(() => {
-          const instream1 = fs.createReadStream('data.1.json');
-          const outstream1 = new (require('stream'))();
-          const rl1 = readline.createInterface(instream1, outstream1);
-
-          let bulkMovies = '';
-          rl1.on('line', line => {
-            //console.log(line);
-            const addCmd = { index: { _index: 'tmdb', _type: 'movie', _id: JSON.parse(line).id } };
-            bulkMovies += `${JSON.stringify(addCmd)}\n${line}\n`;
-          });
-
-          rl1.on('close', () => {
-            //console.log(`bulkMovies: ${bulkMovies}`);
-            console.log('done reading file.');
-            axios.post('/_bulk', bulkMovies, headers)
-              .then(() => console.log('bulk done'))
-              .catch(error => console.log(error));
-          });
-
-          const instream2 = fs.createReadStream('data.2.json');
-          const outstream2 = new (require('stream'))();
-          const rl2 = readline.createInterface(instream2, outstream2);
-
-          let bulkMovies2 = '';
-          rl2.on('line', line => {
-            //console.log(line);
-            const addCmd = { index: { _index: 'tmdb', _type: 'movie', _id: JSON.parse(line).id } };
-            bulkMovies2 += `${JSON.stringify(addCmd)}\n${line}\n`;
-          });
-
-          rl2.on('close', () => {
-            //console.log(`bulkMovies: ${bulkMovies}`);
-            console.log('done reading second file.');
-            axios.post('/_bulk', bulkMovies2, headers)
-              .then(() => console.log('bulk2 done'))
-              .catch(error => console.log(error));
-          });
+          fillData('data.1.json');
+          fillData('data.2.json');
         });
     });
 };
