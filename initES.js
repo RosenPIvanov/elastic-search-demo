@@ -53,7 +53,16 @@ const reindex = (analysisSettings={}, mappingSettings={}) => {
     });
 };
 
-reindex(); //initial example
+//reindex(); //initial example
+
+/**  english analyzer  **/
+const analysis = {
+  analyzer: {
+    default: {
+      type: 'english'
+    } } };
+
+reindex(analysis , {});
 
 const mappingSettings = {
   movie: {
@@ -72,10 +81,3 @@ const mappingSettings = {
 
 //reindex({}, mappingSettings); //extended analysis
 //
-// const analysis = {
-//   analyzer: {
-//     default: {
-//       type: 'english'
-//     } } };
-
-//reindex(analysis , mappingSettings);
