@@ -53,4 +53,29 @@ const reindex = (analysisSettings={}, mappingSettings={}) => {
     });
 };
 
-reindex();
+reindex(); //initial example
+
+const mappingSettings = {
+  movie: {
+    properties: {
+      title: {
+        type: 'string',
+        analyzer: 'english'
+      },
+      overview: {
+        type: 'string',
+        analyzer: 'english'
+      }
+    }
+  }
+};
+
+//reindex({}, mappingSettings); //extended analysis
+//
+// const analysis = {
+//   analyzer: {
+//     default: {
+//       type: 'english'
+//     } } };
+
+//reindex(analysis , mappingSettings);

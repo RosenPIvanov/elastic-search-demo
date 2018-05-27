@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "search": "node search.js",
     "start": "node initES.js",
     "crawl": "node crawl.js",
     "lint": "eslint --ext .js, .",
