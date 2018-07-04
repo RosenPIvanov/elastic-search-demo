@@ -14,7 +14,7 @@ const fillData = fileName => {
   let bulkMovies = '';
   rl.on('line', line => {
     //console.log(line);
-    const addCmd = { index: { _index: 'tmdb', _type: 'movie', _id: JSON.parse(line).id } };
+    const addCmd = { index: { _index: 'tmdb-facet', _type: 'movie', _id: JSON.parse(line).id } };
     bulkMovies += `${JSON.stringify(addCmd)}\n${line}\n`;
   });
 
@@ -38,12 +38,12 @@ const reindex = (analysisSettings={}, mappingSettings={}) => {
 
   if (mappingSettings)
     settings.mappings = mappingSettings;
-  axios.delete('/tmdb', {})
+  axios.delete('/tmdb-facet', {})
     .then(response => console.log(`index deleted${response}`))
     .catch(error => console.log(error))
     .then(() => {
       console.log('lets create new index');
-      axios.put('/tmdb', settings)
+      axios.put('/tmdb-facet', settings)
         .then(response => console.log('index created', response))
         .catch(error => console.log(error))
         .then(() => {
@@ -62,8 +62,9 @@ const analysis = {
       type: 'english'
     } } };
 
-reindex(analysis , {});
-
+//reindex(analysis , {});
+fillData('data.1.json');
+fillData('data.2.json');
 const mappingSettings = {
   movie: {
     properties: {
